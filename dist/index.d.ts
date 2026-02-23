@@ -6,13 +6,11 @@
  * repositories, languages, and README content.
  *
  * Transports:
- *   - stdio  (default) — for local VS Code / Claude Desktop use
- *   - HTTP/SSE         — when PORT env var is set (for hosted deployment)
- *     - GET  /sse               MCP SSE transport endpoint
- *     - POST /messages          SSE message handler
- *     - POST /call/:tool        REST proxy (used by Python agentic pipeline)
- *     - GET  /tools             List available tools
+ *   - stdio  (default, local) — for VS Code / Claude Desktop
+ *   - HTTP   (when PORT is set) — Express REST API for hosted/cloud use
  *     - GET  /health            Health check
+ *     - GET  /tools             List available tools
+ *     - POST /call/:tool        Call a tool by name
  */
 export {};
 //# sourceMappingURL=index.d.ts.map

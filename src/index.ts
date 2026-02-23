@@ -7,18 +7,15 @@
  * repositories, languages, and README content.
  *
  * Transports:
- *   - stdio  (default) — for local VS Code / Claude Desktop use
- *   - HTTP/SSE         — when PORT env var is set (for hosted deployment)
- *     - GET  /sse               MCP SSE transport endpoint
- *     - POST /messages          SSE message handler
- *     - POST /call/:tool        REST proxy (used by Python agentic pipeline)
- *     - GET  /tools             List available tools
+ *   - stdio  (default, local) — for VS Code / Claude Desktop
+ *   - HTTP   (when PORT is set) — Express REST API for hosted/cloud use
  *     - GET  /health            Health check
+ *     - GET  /tools             List available tools
+ *     - POST /call/:tool        Call a tool by name
  */
 
 import { McpServer, ResourceTemplate } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-import { SSEServerTransport } from "@modelcontextprotocol/sdk/server/sse.js";
 import express from "express";
 import { z } from "zod";
 
@@ -28,7 +25,10 @@ import { z } from "zod";
 
 const GITHUB_USERNAME = process.env.GITHUB_USERNAME ?? "bdbrown4";
 const GITHUB_API = "https://api.github.com";
-const PORT = process.env.PORT ? parseInt(process.env.PORT) : null;
+// Use PORT env var (injected by Railway/Render/etc.) or default to 3000 when
+// running in a known cloud environment. Falls back to stdio locally.
+const IS_CLOUD = !!(process.env.RAILWAY_ENVIRONMENT ?? process.env.RENDER ?? process.env.FLY_APP_NAME ?? process.env.PORT);
+const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : (IS_CLOUD ? 3000 : null);
 
 const headers: Record<string, string> = {
   Accept: "application/vnd.github.v3+json",
@@ -263,20 +263,7 @@ async function startHttp() {
   const app = express();
   app.use(express.json());
 
-  let sseTransport: SSEServerTransport | null = null;
-
-  // MCP SSE transport — for MCP-compatible clients
-  app.get("/sse", async (_req, res) => {
-    sseTransport = new SSEServerTransport("/messages", res);
-    await server.connect(sseTransport);
-  });
-
-  app.post("/messages", async (req, res) => {
-    if (!sseTransport) { res.status(400).json({ error: "No active SSE session" }); return; }
-    await sseTransport.handlePostMessage(req, res);
-  });
-
-  // REST proxy — for Python agentic pipeline (no SSE client needed)
+  // REST proxy — called by the Python agentic pipeline
   app.post("/call/:tool", async (req, res) => {
     const toolName = req.params.tool!;
     const handler = TOOL_REGISTRY[toolName];
@@ -301,9 +288,13 @@ async function startHttp() {
     res.json({ status: "ok", username: GITHUB_USERNAME, tools: Object.keys(TOOL_REGISTRY).length });
   });
 
-  app.listen(PORT!, () => {
+  // Root — friendly message instead of 404
+  app.get("/", (_req, res) => {
+    res.json({ name: "github-portfolio-mcp-server", status: "ok", endpoints: ["/health", "/tools", "/call/:tool"] });
+  });
+
+  app.listen(PORT!, "0.0.0.0", () => {
     console.log(`GitHub Portfolio MCP Server running on port ${PORT}`);
-    console.log(`  SSE:  GET  /sse`);
     console.log(`  REST: POST /call/:tool_name`);
     console.log(`  Tools: ${Object.keys(TOOL_REGISTRY).join(", ")}`);
   });
