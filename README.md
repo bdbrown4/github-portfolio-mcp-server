@@ -75,6 +75,12 @@ Set a GitHub Personal Access Token to avoid the 60 req/hour unauthenticated limi
 }
 ```
 
+## Example
+
+Here's the `list_repos` tool in action inside VS Code with GitHub Copilot, listing all 18 original (non-forked) public repos sorted by most recently updated:
+
+![list_repos example](docs/list_repos_example.png)
+
 ## Development
 
 ```bash
