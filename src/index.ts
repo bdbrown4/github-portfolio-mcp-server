@@ -19,6 +19,7 @@
 import { McpServer, ResourceTemplate } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { SSEServerTransport } from "@modelcontextprotocol/sdk/server/sse.js";
+import express from "express";
 import { z } from "zod";
 
 // ---------------------------------------------------------------------------
@@ -259,7 +260,6 @@ server.registerResource(
 // ---------------------------------------------------------------------------
 
 async function startHttp() {
-  const { default: express } = await import("express");
   const app = express();
   app.use(express.json());
 
@@ -324,6 +324,16 @@ async function main() {
 }
 
 main().catch((err) => {
-  console.error("Fatal error:", err);
+  console.error("Fatal error in main():", err);
+  process.exit(1);
+});
+
+process.on("uncaughtException", (err) => {
+  console.error("Uncaught exception:", err);
+  process.exit(1);
+});
+
+process.on("unhandledRejection", (reason) => {
+  console.error("Unhandled rejection:", reason);
   process.exit(1);
 });
