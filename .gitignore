@@ -1,2 +1,2 @@
 node_modules/
-dist/
+# dist/ is intentionally committed so Railway can run without a build step
