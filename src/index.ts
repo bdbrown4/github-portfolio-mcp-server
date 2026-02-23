@@ -25,10 +25,10 @@ import { z } from "zod";
 
 const GITHUB_USERNAME = process.env.GITHUB_USERNAME ?? "bdbrown4";
 const GITHUB_API = "https://api.github.com";
-// Use PORT env var (injected by Railway/Render/etc.) or default to 3000 when
-// running in a known cloud environment. Falls back to stdio locally.
-const IS_CLOUD = !!(process.env.RAILWAY_ENVIRONMENT ?? process.env.RENDER ?? process.env.FLY_APP_NAME ?? process.env.PORT);
-const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : (IS_CLOUD ? 3000 : null);
+// Railway (and most PaaS) injects PORT. If set, run as HTTP server; otherwise stdio.
+const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : null;
+
+console.error(`[startup] PORT=${PORT ?? "unset (stdio mode)"} GITHUB_USERNAME=${GITHUB_USERNAME}`);
 
 const headers: Record<string, string> = {
   Accept: "application/vnd.github.v3+json",
