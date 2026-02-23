@@ -1,0 +1,26 @@
+{
+  "name": "github-portfolio-mcp-server",
+  "version": "1.0.0",
+  "description": "An MCP server that exposes tools to query GitHub portfolio data — repos, languages, READMEs, and profile info.",
+  "main": "dist/index.js",
+  "bin": {
+    "github-portfolio-mcp": "dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "tsc --watch"
+  },
+  "keywords": ["mcp", "github", "portfolio", "ai"],
+  "author": "Ben Brown",
+  "license": "MIT",
+  "type": "module",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.26.0",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@types/node": "^25.3.0",
+    "typescript": "^5.9.3"
+  }
+}
